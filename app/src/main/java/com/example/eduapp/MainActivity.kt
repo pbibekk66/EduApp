@@ -13,30 +13,45 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import androidx.room.Room
+import com.example.eduapp.database.AppDatabase
 import com.example.eduapp.screen.GameScreen
 import com.example.eduapp.screen.LandingScreen
 import com.example.eduapp.screen.ScoreScreen
 import com.example.eduapp.screen.SettingScreen
 import com.example.eduapp.screen.TestDBScreen
 import com.example.eduapp.ui.theme.EduAppTheme
+import com.example.eduapp.viewmodel.AppViewModel
+import com.example.eduapp.viewmodel.AppViewModelFactory
 
 class MainActivity : ComponentActivity() {
+    private lateinit var db: AppDatabase
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        val currentContext = applicationContext
+        
+        db = Room.databaseBuilder(
+            applicationContext,
+            AppDatabase::class.java, "eduapp-db"
+        ).build()
+
+        val viewModelFactory = AppViewModelFactory(db.appDao())
+
         setContent {
             EduAppTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    AppNav(currentContext)
+                    val appViewModel: AppViewModel = viewModel(factory = viewModelFactory)
+                    AppNav(applicationContext, appViewModel)
                 }
             }
         }
@@ -44,7 +59,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun AppNav(currentContext: Context) {
+fun AppNav(currentContext: Context, viewModel: AppViewModel) {
     val navController = rememberNavController()
     NavHost(
         navController = navController,
@@ -70,10 +85,10 @@ fun AppNav(currentContext: Context) {
         ) { backStackEntry ->
             val username = backStackEntry.arguments?.getString("username") ?: ""
             val level = backStackEntry.arguments?.getString("level") ?: "1"
-            GameScreen(currentContext, navController, username, level)
+            GameScreen(currentContext, navController, username, level, viewModel)
         }
         
-        composable("score") { ScoreScreen(navController) }
+        composable("score") { ScoreScreen(navController, viewModel) }
         composable("testDB") { TestDBScreen(currentContext) }
     }
 }

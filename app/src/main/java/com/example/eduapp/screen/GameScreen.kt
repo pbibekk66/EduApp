@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.eduapp.helper.rememberAssetImage
+import com.example.eduapp.viewmodel.AppViewModel
 import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -23,6 +24,7 @@ fun GameScreen(
     navController: NavHostController,
     username: String,
     level: String,
+    viewModel: AppViewModel,
     modifier: Modifier = Modifier
 ) {
     val assetManager = currentContext.assets
@@ -149,7 +151,8 @@ fun GameScreen(
                         currentPuzzleIndex++
                         answerText = ""
                     } else {
-                        // Game Over - Navigate to Score Screen
+                        // Game Over - Save result to database and Navigate to Score Screen
+                        viewModel.saveGameResult(username, level, score, secondsElapsed)
                         navController.navigate("score")
                     }
                 },

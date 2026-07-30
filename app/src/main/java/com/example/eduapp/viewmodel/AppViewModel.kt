@@ -18,6 +18,18 @@ class AppViewModel(private val dao: AppDao) : ViewModel() {
         }
     }
 
+    fun saveGameResult(username: String, level: String, score: Int, duration: Int) {
+        viewModelScope.launch {
+            val user = User(
+                username = username,
+                level = level,
+                score = score,
+                duration = duration
+            )
+            dao.insert(user)
+        }
+    }
+
     fun clearUsers() {
         viewModelScope.launch {
             dao.deleteAll()

@@ -25,7 +25,7 @@ fun SettingScreen(navController: NavHostController, username: String, modifier: 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("CueEduApp", fontWeight = FontWeight.SemiBold) },
+                title = { Text("BibekEduApp", fontWeight = FontWeight.SemiBold) },
                 actions = {
                     IconButton(onClick = { navController.navigate("score") }) {
                         Icon(
