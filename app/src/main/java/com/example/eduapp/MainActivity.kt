@@ -1,12 +1,17 @@
 @file:OptIn(ExperimentalMaterial3Api::class)
 package com.example.eduapp
+
 import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -25,32 +30,37 @@ class MainActivity : ComponentActivity() {
         val currentContext = applicationContext
         setContent {
             EduAppTheme {
-                AppNav(currentContext)
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    AppNav(currentContext)
+                }
             }
         }
     }
 }
+
 @Composable
-fun AppNav(currentContext: Context){
-    //obtain navController
+fun AppNav(currentContext: Context) {
     val navController = rememberNavController()
-    //set navHost and the routes
-    NavHost(navController = navController, startDestination = "landing") {
+    NavHost(
+        navController = navController,
+        startDestination = "landing",
+        modifier = Modifier.fillMaxSize()
+    ) {
         composable("landing") { LandingScreen(navController) }
         composable("setting") { SettingScreen(navController) }
         composable("game") { GameScreen(currentContext, navController) }
         composable("score") { ScoreScreen(navController) }
         composable("testDB") { TestDBScreen(currentContext) }
     }
-
 }
-
-
 
 @Preview(showBackground = true)
 @Composable
 fun GreetingPreview() {
     EduAppTheme {
-
+        // Preview content
     }
 }
