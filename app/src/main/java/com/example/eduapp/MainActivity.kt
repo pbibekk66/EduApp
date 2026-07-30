@@ -13,9 +13,11 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.eduapp.screen.GameScreen
 import com.example.eduapp.screen.LandingScreen
 import com.example.eduapp.screen.ScoreScreen
@@ -50,8 +52,27 @@ fun AppNav(currentContext: Context) {
         modifier = Modifier.fillMaxSize()
     ) {
         composable("landing") { LandingScreen(navController) }
-        composable("setting") { SettingScreen(navController) }
-        composable("game") { GameScreen(currentContext, navController) }
+        
+        composable(
+            route = "setting/{username}",
+            arguments = listOf(navArgument("username") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val username = backStackEntry.arguments?.getString("username") ?: ""
+            SettingScreen(navController, username)
+        }
+        
+        composable(
+            route = "game/{username}/{level}",
+            arguments = listOf(
+                navArgument("username") { type = NavType.StringType },
+                navArgument("level") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val username = backStackEntry.arguments?.getString("username") ?: ""
+            val level = backStackEntry.arguments?.getString("level") ?: "1"
+            GameScreen(currentContext, navController, username, level)
+        }
+        
         composable("score") { ScoreScreen(navController) }
         composable("testDB") { TestDBScreen(currentContext) }
     }

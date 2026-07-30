@@ -20,7 +20,7 @@ fun LandingScreen(navController: NavHostController, modifier: Modifier = Modifie
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Bibek EduApp", fontWeight = FontWeight.SemiBold) },
+                title = { Text("BibekEduApp", fontWeight = FontWeight.SemiBold) },
                 actions = {
                     IconButton(onClick = { navController.navigate("score") }) {
                         Icon(
@@ -51,7 +51,7 @@ fun LandingScreen(navController: NavHostController, modifier: Modifier = Modifie
             OutlinedTextField(
                 value = username,
                 onValueChange = { username = it },
-                label = { Text("Enter a username ...") },
+                placeholder = { Text("Enter a username ...") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
@@ -61,7 +61,7 @@ fun LandingScreen(navController: NavHostController, modifier: Modifier = Modifie
             Button(
                 onClick = { 
                     if (username.isNotBlank()) {
-                        navController.navigate("game")
+                        navController.navigate("setting/$username")
                     }
                 },
                 modifier = Modifier.width(120.dp),
@@ -74,7 +74,7 @@ fun LandingScreen(navController: NavHostController, modifier: Modifier = Modifie
                 )
             }
             
-            Spacer(modifier = Modifier.height(100.dp)) // To push content slightly upwards like in image
+            Spacer(modifier = Modifier.height(100.dp))
         }
     }
 }
