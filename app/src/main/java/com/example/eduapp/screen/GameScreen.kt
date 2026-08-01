@@ -11,7 +11,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.eduapp.helper.rememberAssetImage
 import com.example.eduapp.viewmodel.AppViewModel
@@ -93,15 +92,15 @@ fun GameScreen(
                 horizontalArrangement = Arrangement.SpaceAround
             ) {
                 val totalPuzzles = puzzleImages.size
-                Text(text = "Score: $score (/${totalPuzzles * 5})", fontSize = 14.sp)
-                Text(text = "Puzzle: ${currentPuzzleIndex + 1} (/$totalPuzzles)", fontSize = 14.sp)
-                Text(text = "Duration: ${formatDuration(secondsElapsed)}", fontSize = 14.sp)
+                Text(text = "Score: $score (/${totalPuzzles * 5})", style = MaterialTheme.typography.bodySmall)
+                Text(text = "Puzzle: ${currentPuzzleIndex + 1} (/$totalPuzzles)", style = MaterialTheme.typography.bodySmall)
+                Text(text = "Duration: ${formatDuration(secondsElapsed)}", style = MaterialTheme.typography.bodySmall)
             }
 
             Spacer(modifier = Modifier.height(12.dp))
 
             // User Info
-            Text(text = "User: $username  Level: $level", fontSize = 16.sp)
+            Text(text = "User: $username  Level: $level", style = MaterialTheme.typography.bodyMedium)
 
             Spacer(modifier = Modifier.height(64.dp))
 
@@ -119,7 +118,7 @@ fun GameScreen(
                 } else if (currentImagePath.isNotEmpty()) {
                     CircularProgressIndicator()
                 } else {
-                    Text("No puzzles found for this level.")
+                    Text("No puzzles found for this level.", style = MaterialTheme.typography.bodyLarge)
                 }
             }
 
@@ -132,6 +131,7 @@ fun GameScreen(
                 placeholder = { Text("Enter your answer ...") },
                 modifier = Modifier.fillMaxWidth(0.9f),
                 singleLine = true,
+                textStyle = MaterialTheme.typography.bodyLarge,
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Color(0xFFD0BCFF),
                     unfocusedBorderColor = Color.Gray
@@ -165,7 +165,7 @@ fun GameScreen(
             ) {
                 Text(
                     text = "CHECK",
-                    fontSize = 20.sp,
+                    style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.SemiBold
                 )
             }

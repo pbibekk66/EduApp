@@ -9,7 +9,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -42,7 +41,7 @@ fun LandingScreen(navController: NavHostController, modifier: Modifier = Modifie
         ) {
             Text(
                 text = "Welcome To The Game",
-                fontSize = 28.sp,
+                style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Normal
             )
             
@@ -53,7 +52,8 @@ fun LandingScreen(navController: NavHostController, modifier: Modifier = Modifie
                 onValueChange = { username = it },
                 placeholder = { Text("Enter a username ...") },
                 modifier = Modifier.fillMaxWidth(),
-                singleLine = true
+                singleLine = true,
+                textStyle = MaterialTheme.typography.bodyLarge
             )
             
             Spacer(modifier = Modifier.height(48.dp))
@@ -69,7 +69,7 @@ fun LandingScreen(navController: NavHostController, modifier: Modifier = Modifie
             ) {
                 Text(
                     text = "PLAY",
-                    fontSize = 18.sp,
+                    style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.Medium
                 )
             }

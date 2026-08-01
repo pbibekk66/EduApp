@@ -14,7 +14,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.eduapp.viewmodel.AppViewModel
 import java.text.SimpleDateFormat
@@ -50,7 +49,7 @@ fun ScoreScreen(navController: NavHostController, viewModel: AppViewModel, modif
         ) {
             if (userResults.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(text = "No scores recorded yet.", fontSize = 18.sp)
+                    Text(text = "No scores recorded yet.", style = MaterialTheme.typography.bodyLarge)
                 }
             } else {
                 LazyColumn(
@@ -81,19 +80,19 @@ fun ScoreItem(user: com.example.eduapp.database.User) {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(text = user.username, fontWeight = FontWeight.Bold, fontSize = 20.sp)
-                Text(text = "Score: ${user.score}", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold)
+                Text(text = user.username, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleLarge)
+                Text(text = "Score: ${user.score}", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold, style = MaterialTheme.typography.titleMedium)
             }
             Spacer(modifier = Modifier.height(4.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(text = "Level: ${user.level}", fontSize = 14.sp)
-                Text(text = "Time: ${formatDuration(user.duration)}", fontSize = 14.sp)
+                Text(text = "Level: ${user.level}", style = MaterialTheme.typography.bodySmall)
+                Text(text = "Time: ${formatDuration(user.duration)}", style = MaterialTheme.typography.bodySmall)
             }
             Spacer(modifier = Modifier.height(4.dp))
-            Text(text = dateString, fontSize = 12.sp, color = MaterialTheme.colorScheme.outline)
+            Text(text = dateString, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.outline)
         }
     }
 }

@@ -11,6 +11,8 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -45,12 +47,15 @@ class MainActivity : ComponentActivity() {
         val viewModelFactory = AppViewModelFactory(db.appDao())
 
         setContent {
-            EduAppTheme {
+            val appViewModel: AppViewModel = viewModel(factory = viewModelFactory)
+            val isDarkTheme by appViewModel.isDarkTheme.collectAsState()
+            val fontSizeMultiplier by appViewModel.fontSizeMultiplier.collectAsState()
+            
+            EduAppTheme(darkTheme = isDarkTheme, fontSizeMultiplier = fontSizeMultiplier) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    val appViewModel: AppViewModel = viewModel(factory = viewModelFactory)
                     AppNav(applicationContext, appViewModel)
                 }
             }
@@ -73,7 +78,7 @@ fun AppNav(currentContext: Context, viewModel: AppViewModel) {
             arguments = listOf(navArgument("username") { type = NavType.StringType })
         ) { backStackEntry ->
             val username = backStackEntry.arguments?.getString("username") ?: ""
-            SettingScreen(navController, username)
+            SettingScreen(navController, username, viewModel = viewModel)
         }
         
         composable(
