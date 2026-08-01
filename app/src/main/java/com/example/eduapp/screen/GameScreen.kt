@@ -17,6 +17,10 @@ import com.example.eduapp.helper.rememberAssetImage
 import com.example.eduapp.viewmodel.AppViewModel
 import kotlinx.coroutines.delay
 
+/**
+ * Main game screen where the user solves number puzzles.
+ * Handles timer, score tracking, puzzle image loading, and answer validation.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GameScreen(
@@ -29,18 +33,21 @@ fun GameScreen(
 ) {
     val assetManager = currentContext.assets
     
-    // Explicitly specify List<String> type to resolve inference issues.
-    // .sorted() returns a List, so we use emptyList() for the fallback.
+    // Load puzzle images from the selected level folder in assets
     val puzzleImages: List<String> = remember(level) {
         assetManager.list(level)?.sorted() ?: emptyList()
     }
 
+    // Game State
     var currentPuzzleIndex by remember { mutableIntStateOf(0) }
     var score by remember { mutableIntStateOf(0) }
     var answerText by remember { mutableStateOf("") }
     var secondsElapsed by remember { mutableIntStateOf(0) }
+    
+    // Collect settings from ViewModel
+    val isSoundEnabled by viewModel.isSoundEnabled.collectAsState()
 
-    // Timer logic
+    // FEATURE: Game Timer - increments every second
     LaunchedEffect(Unit) {
         while (true) {
             delay(1000)
@@ -48,6 +55,7 @@ fun GameScreen(
         }
     }
 
+    // Determine current puzzle image path
     val currentImageName = if (puzzleImages.isNotEmpty() && currentPuzzleIndex < puzzleImages.size) {
         puzzleImages[currentPuzzleIndex]
     } else {
@@ -57,7 +65,7 @@ fun GameScreen(
     val currentImagePath = if (currentImageName.isNotEmpty()) "$level/$currentImageName" else ""
     val imageBitmap = rememberAssetImage(currentImagePath)
 
-    // Extract answer from filename (e.g., "level01_pic04_55.jpg" -> "55")
+    // LOGIC: Extract correct answer from filename (pattern: ..._answer.jpg)
     val correctAnswer = remember(currentImageName) {
         if (currentImageName.contains("_") && currentImageName.contains(".")) {
             currentImageName.substringBeforeLast(".").substringAfterLast("_")
@@ -66,6 +74,9 @@ fun GameScreen(
         }
     }
 
+    /**
+     * Formats seconds into HH:MM:SS string for display.
+     */
     fun formatDuration(seconds: Int): String {
         val h = seconds / 3600
         val m = (seconds % 3600) / 60
@@ -87,7 +98,7 @@ fun GameScreen(
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Stats Row: Score, Puzzle Count, Duration
+            // HUD: Score, Puzzle Count, and Timer
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceAround
@@ -100,12 +111,12 @@ fun GameScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // User Info
+            // User & Level Info
             Text(text = "User: $username  Level: $level", style = MaterialTheme.typography.bodyMedium)
 
             Spacer(modifier = Modifier.height(64.dp))
 
-            // Puzzle Image
+            // Puzzle Image Display
             Box(
                 modifier = Modifier.size(200.dp),
                 contentAlignment = Alignment.Center
@@ -125,7 +136,7 @@ fun GameScreen(
 
             Spacer(modifier = Modifier.weight(1f))
 
-            // Answer Input
+            // Answer Input Field
             OutlinedTextField(
                 value = answerText,
                 onValueChange = { answerText = it },
@@ -141,16 +152,18 @@ fun GameScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Check Button
+            // Check Answer Button
             Button(
                 onClick = {
+                    // Validate answer and play sound if enabled
                     if (answerText.trim() == correctAnswer) {
                         score += 5
-                        playSound(currentContext, "winning")
+                        if (isSoundEnabled) playSound(currentContext, "winning")
                     } else {
-                        playSound(currentContext, "losing")
+                        if (isSoundEnabled) playSound(currentContext, "losing")
                     }
                     
+                    // Proceed to next puzzle or end game
                     if (currentPuzzleIndex < puzzleImages.size - 1) {
                         currentPuzzleIndex++
                         answerText = ""

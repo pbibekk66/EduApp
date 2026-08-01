@@ -10,24 +10,51 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
+/**
+ * Shared ViewModel for the application.
+ * Manages game data persistence (Room) and UI settings (Theme, Font, Sound).
+ */
 class AppViewModel(private val dao: AppDao) : ViewModel() {
 
+    // Database observation
     val users: Flow<List<User>> = dao.getAllUsers()
 
+    // SETTING: Dark Mode preference
     private val _isDarkTheme = MutableStateFlow(false)
     val isDarkTheme: StateFlow<Boolean> = _isDarkTheme.asStateFlow()
 
+    // SETTING: Font scale multiplier (applies to all typography)
     private val _fontSizeMultiplier = MutableStateFlow(1.0f)
     val fontSizeMultiplier: StateFlow<Float> = _fontSizeMultiplier.asStateFlow()
 
+    // SETTING: Sound effects master toggle
+    private val _isSoundEnabled = MutableStateFlow(true)
+    val isSoundEnabled: StateFlow<Boolean> = _isSoundEnabled.asStateFlow()
+
+    /**
+     * Updates the dark mode theme setting.
+     */
     fun toggleTheme(isDark: Boolean) {
         _isDarkTheme.value = isDark
     }
 
+    /**
+     * Updates the font size multiplier.
+     */
     fun setFontSizeMultiplier(multiplier: Float) {
         _fontSizeMultiplier.value = multiplier
     }
 
+    /**
+     * Updates the sound enabled/disabled setting.
+     */
+    fun toggleSound(enabled: Boolean) {
+        _isSoundEnabled.value = enabled
+    }
+
+    /**
+     * Adds a new user to the database.
+     */
     fun addUser(username: String) {
         viewModelScope.launch {
             val user = User(username = username)
@@ -35,6 +62,9 @@ class AppViewModel(private val dao: AppDao) : ViewModel() {
         }
     }
 
+    /**
+     * Saves game results after a session is completed.
+     */
     fun saveGameResult(username: String, level: String, score: Int, duration: Int) {
         viewModelScope.launch {
             val user = User(
@@ -47,6 +77,9 @@ class AppViewModel(private val dao: AppDao) : ViewModel() {
         }
     }
 
+    /**
+     * Deletes all score records from the database.
+     */
     fun clearUsers() {
         viewModelScope.launch {
             dao.deleteAll()

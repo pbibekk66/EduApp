@@ -15,6 +15,14 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.eduapp.viewmodel.AppViewModel
 
+/**
+ * Screen that allows users to configure application settings.
+ * Includes features for:
+ * - Toggling Dark/Light Mode
+ * - Enabling/Disabling Sound
+ * - Adjusting Font Size
+ * - Selecting Game Difficulty Level
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingScreen(
@@ -23,18 +31,22 @@ fun SettingScreen(
     viewModel: AppViewModel,
     modifier: Modifier = Modifier
 ) {
+    // UI State for dropdown menu
     var expanded by remember { mutableStateOf(false) }
     val levels = listOf("Level 1: Beginner", "Level 2: Intermediate", "Level 3: Advanced")
     var selectedLevel by remember { mutableStateOf(levels[0]) }
 
+    // Collect settings state from ViewModel
     val isDarkTheme by viewModel.isDarkTheme.collectAsState()
     val fontSizeMultiplier by viewModel.fontSizeMultiplier.collectAsState()
+    val isSoundEnabled by viewModel.isSoundEnabled.collectAsState()
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("BibekEduApp", fontWeight = FontWeight.SemiBold) },
                 actions = {
+                    // Navigate to scores screen
                     IconButton(onClick = { navController.navigate("score") }) {
                         Icon(
                             imageVector = Icons.Default.List,
@@ -63,7 +75,7 @@ fun SettingScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Dark Mode Toggle
+            // FEATURE: Dark Mode Toggle
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth(),
@@ -76,9 +88,24 @@ fun SettingScreen(
                 )
             }
 
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // FEATURE: Sound Effects Toggle
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(text = "Enable Sound", style = MaterialTheme.typography.bodyLarge)
+                Switch(
+                    checked = isSoundEnabled,
+                    onCheckedChange = { viewModel.toggleSound(it) }
+                )
+            }
+
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Font Size Adjustment
+            // FEATURE: Font Size Adjustment Slider
             Column(modifier = Modifier.fillMaxWidth()) {
                 Text(text = "Font Size", style = MaterialTheme.typography.bodyLarge)
                 Slider(
@@ -91,6 +118,7 @@ fun SettingScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
+            // FEATURE: Game Level Selection
             Text(
                 text = "Select a level",
                 style = MaterialTheme.typography.bodyLarge,
@@ -127,6 +155,7 @@ fun SettingScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
+            // Start Game Button
             Button(
                 onClick = { 
                     val levelValue = when(selectedLevel) {
