@@ -12,6 +12,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import com.example.eduapp.helper.playSound
 import com.example.eduapp.helper.rememberAssetImage
 import com.example.eduapp.viewmodel.AppViewModel
 import kotlinx.coroutines.delay
@@ -145,6 +146,9 @@ fun GameScreen(
                 onClick = {
                     if (answerText.trim() == correctAnswer) {
                         score += 5
+                        playSound(currentContext, "winning")
+                    } else {
+                        playSound(currentContext, "losing")
                     }
                     
                     if (currentPuzzleIndex < puzzleImages.size - 1) {
