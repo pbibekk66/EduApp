@@ -49,6 +49,10 @@ fun GameScreen(
     var secondsElapsed by remember { mutableIntStateOf(0) }
     val isSoundEnabled by viewModel.isSoundEnabled.collectAsState()
 
+    // Dialog state
+    var showResultDialog by remember { mutableStateOf(false) }
+    val allScores by viewModel.users.collectAsState(initial = emptyList())
+
     // Timer logic
     LaunchedEffect(Unit) {
         while (true) {
@@ -245,7 +249,7 @@ fun GameScreen(
                             answerText = ""
                         } else {
                             viewModel.saveGameResult(username, level, score, secondsElapsed)
-                            navController.navigate("score")
+                            showResultDialog = true
                         }
                     },
                     modifier = Modifier
@@ -264,5 +268,86 @@ fun GameScreen(
                 Spacer(modifier = Modifier.height(20.dp))
             }
         }
+    }
+
+    if (showResultDialog) {
+        val maxPossibleScore = puzzleImages.size * 5
+        val isPassed = score >= (maxPossibleScore * 0.5)
+        val rank = allScores.filter { it.level == level }.count { it.score > score } + 1
+
+        AlertDialog(
+            onDismissRequest = {
+                showResultDialog = false
+                navController.navigate("score")
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showResultDialog = false
+                        navController.navigate("score")
+                    },
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text("VIEW SCOREBOARD")
+                }
+            },
+            title = {
+                Text(
+                    text = if (isPassed) "MISSION COMPLETE" else "GAME OVER, TRY AGAIN",
+                    fontWeight = FontWeight.Black,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            },
+            text = {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    if (isPassed) {
+                        Text(
+                            text = "Congratulations, Mission Complited!",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.primary,
+                            textAlign = TextAlign.Center
+                        )
+                        val rankSuffix = when (rank) {
+                            1 -> "1st"
+                            2 -> "2nd"
+                            3 -> "3rd"
+                            else -> "${rank}th"
+                        }
+                        Text(
+                            text = "You secured $rankSuffix position!",
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.ExtraBold,
+                            modifier = Modifier.padding(top = 12.dp)
+                        )
+                    } else {
+                        Text(
+                            text = "You loose!",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.error,
+                            textAlign = TextAlign.Center
+                        )
+                        Text(
+                            text = "You secured less than 50%",
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(top = 8.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = "Score: $score / $maxPossibleScore",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+            },
+            shape = RoundedCornerShape(28.dp),
+            containerColor = MaterialTheme.colorScheme.surface,
+            tonalElevation = 6.dp
+        )
     }
 }
