@@ -121,7 +121,7 @@ fun LandingScreen(navController: NavHostController, modifier: Modifier = Modifie
                 OutlinedTextField(
                     value = username,
                     onValueChange = { username = it },
-                    label = { Text("Ninja Name") },
+                    label = { Text("Player Name") },
                     placeholder = { Text("Who is playing today?") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
