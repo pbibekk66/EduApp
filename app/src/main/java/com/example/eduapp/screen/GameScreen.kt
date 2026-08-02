@@ -287,23 +287,14 @@ fun GameScreen(
                 showResultDialog = false
                 navController.navigate("score")
             },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        showResultDialog = false
-                        navController.navigate("score")
-                    },
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Text("VIEW SCOREBOARD")
-                }
-            },
+            confirmButton = {},
             title = {
                 Text(
                     text = if (isPassed) "MISSION COMPLETE" else "GAME OVER, TRY AGAIN",
                     fontWeight = FontWeight.Black,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    style = MaterialTheme.typography.headlineSmall
                 )
             },
             text = {
@@ -313,10 +304,11 @@ fun GameScreen(
                 ) {
                     if (isPassed) {
                         Text(
-                            text = "Congratulations, Mission Complited!",
+                            text = "Congratulations, Mission Completed!",
                             style = MaterialTheme.typography.titleMedium,
                             color = MaterialTheme.colorScheme.primary,
-                            textAlign = TextAlign.Center
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth()
                         )
                         val rankSuffix = when (rank) {
                             1 -> "1st"
@@ -326,30 +318,49 @@ fun GameScreen(
                         }
                         Text(
                             text = "You secured $rankSuffix position!",
-                            style = MaterialTheme.typography.headlineSmall,
+                            style = MaterialTheme.typography.headlineMedium,
                             fontWeight = FontWeight.ExtraBold,
-                            modifier = Modifier.padding(top = 12.dp)
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth().padding(top = 12.dp)
                         )
                     } else {
                         Text(
-                            text = "You loose!",
+                            text = "Better luck next time!",
                             style = MaterialTheme.typography.titleMedium,
                             color = MaterialTheme.colorScheme.error,
-                            textAlign = TextAlign.Center
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth()
                         )
                         Text(
                             text = "You secured less than 50%",
                             style = MaterialTheme.typography.bodyLarge,
                             fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(top = 8.dp)
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
                         )
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
+                    
                     Text(
-                        text = "Score: $score / $maxPossibleScore",
-                        style = MaterialTheme.typography.bodyMedium
+                        text = "Final Score: $score / $maxPossibleScore",
+                        style = MaterialTheme.typography.bodyLarge,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
                     )
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    Button(
+                        onClick = {
+                            showResultDialog = false
+                            navController.navigate("score")
+                        },
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth(0.8f)
+                    ) {
+                        Text("VIEW SCOREBOARD")
+                    }
                 }
             },
             shape = RoundedCornerShape(28.dp),
