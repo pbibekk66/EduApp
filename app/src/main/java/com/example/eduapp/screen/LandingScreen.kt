@@ -88,7 +88,7 @@ fun LandingScreen(navController: NavHostController, modifier: Modifier = Modifie
                     elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
                 ) {
                     Image(
-                        painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                        painter = painterResource(id = R.drawable.logo),
                         contentDescription = "Game Logo",
                         modifier = Modifier
                             .fillMaxSize()
