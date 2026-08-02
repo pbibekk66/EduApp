@@ -25,7 +25,8 @@ import com.example.eduapp.viewmodel.AppViewModel
 import kotlinx.coroutines.delay
 
 /**
- * Redesigned Game Screen with immersive UI and improved visual feedback.
+ * Tightly designed Game Screen that fits perfectly on all screen sizes.
+ * Optimized layout for better visibility and faster gameplay.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,6 +49,7 @@ fun GameScreen(
     var secondsElapsed by remember { mutableIntStateOf(0) }
     val isSoundEnabled by viewModel.isSoundEnabled.collectAsState()
 
+    // Timer logic
     LaunchedEffect(Unit) {
         while (true) {
             delay(1000)
@@ -73,20 +75,33 @@ fun GameScreen(
     }
 
     fun formatDuration(seconds: Int): String {
-        val h = seconds / 3600
         val m = (seconds % 3600) / 60
         val s = seconds % 60
-        return String.format("%d:%02d:%02d", h, m, s)
+        return String.format("%02d:%02d", m, s)
     }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Level $level", fontWeight = FontWeight.Bold) },
+                title = { 
+                    Column {
+                        Text("Level $level", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                        Text(username, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+                    }
+                },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                     }
+                },
+                actions = {
+                    Text(
+                        text = formatDuration(secondsElapsed),
+                        modifier = Modifier.padding(end = 16.dp),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Black,
+                        color = MaterialTheme.colorScheme.primary
+                    )
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
             )
@@ -99,7 +114,7 @@ fun GameScreen(
                     brush = Brush.verticalGradient(
                         colors = listOf(
                             MaterialTheme.colorScheme.surface,
-                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.2f)
+                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.15f)
                         )
                     )
                 )
@@ -108,30 +123,57 @@ fun GameScreen(
             Column(
                 modifier = modifier
                     .fillMaxSize()
-                    .padding(horizontal = 24.dp),
+                    .padding(horizontal = 20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // HUD Section
+                // Compact HUD Progress
+                Spacer(modifier = Modifier.height(8.dp))
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    InfoChip(label = "Score", value = score.toString())
-                    InfoChip(label = "Timer", value = formatDuration(secondsElapsed))
-                    InfoChip(label = "Puzzle", value = "${currentPuzzleIndex + 1}/${puzzleImages.size}")
+                    LinearProgressIndicator(
+                        progress = { (currentPuzzleIndex + 1).toFloat() / puzzleImages.size },
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(8.dp)
+                            .clip(RoundedCornerShape(4.dp)),
+                        color = MaterialTheme.colorScheme.primary,
+                        trackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(
+                        text = "${currentPuzzleIndex + 1}/${puzzleImages.size}",
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-                // Puzzle Card
+                // Score Chip
+                Surface(
+                    shape = RoundedCornerShape(16.dp),
+                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
+                ) {
+                    Text(
+                        text = "SCORE: $score",
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Puzzle Card - Fills available space
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .aspectRatio(1.2f),
-                    shape = RoundedCornerShape(32.dp),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+                        .weight(1f),
+                    shape = RoundedCornerShape(24.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                 ) {
                     Box(
                         modifier = Modifier
@@ -146,40 +188,49 @@ fun GameScreen(
                                 modifier = Modifier.fillMaxSize()
                             )
                         } else {
-                            CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                            CircularProgressIndicator(strokeWidth = 2.dp)
                         }
                     }
                 }
 
-                Spacer(modifier = Modifier.height(48.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
-                // Answer Section
-                Text(
-                    text = "WHAT'S THE HIDDEN NUMBER?",
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                OutlinedTextField(
-                    value = answerText,
-                    onValueChange = { answerText = it },
-                    placeholder = { Text("Enter number here...", textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth()) },
+                // Answer Area
+                Column(
                     modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    shape = RoundedCornerShape(20.dp),
-                    textStyle = MaterialTheme.typography.headlineMedium.copy(textAlign = TextAlign.Center),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "FIND THE NUMBER",
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Black,
+                        letterSpacing = 2.sp,
+                        color = MaterialTheme.colorScheme.secondary
                     )
-                )
 
-                Spacer(modifier = Modifier.weight(1f))
+                    Spacer(modifier = Modifier.height(8.dp))
 
-                // Check Button
+                    OutlinedTextField(
+                        value = answerText,
+                        onValueChange = { if (it.length <= 5) answerText = it },
+                        placeholder = { Text("?", textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth()) },
+                        modifier = Modifier.width(150.dp),
+                        singleLine = true,
+                        shape = RoundedCornerShape(16.dp),
+                        textStyle = MaterialTheme.typography.headlineLarge.copy(
+                            textAlign = TextAlign.Center,
+                            fontWeight = FontWeight.Bold
+                        ),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
+                        )
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // Submit Button
                 Button(
                     onClick = {
                         if (answerText.trim() == correctAnswer) {
@@ -199,28 +250,19 @@ fun GameScreen(
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(64.dp)
-                        .clip(RoundedCornerShape(32.dp)),
+                        .height(56.dp),
+                    shape = RoundedCornerShape(16.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) {
                     Text(
                         text = "SUBMIT ANSWER",
                         style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.ExtraBold,
-                        letterSpacing = 1.sp
+                        fontWeight = FontWeight.Black
                     )
                 }
                 
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(20.dp))
             }
         }
-    }
-}
-
-@Composable
-fun InfoChip(label: String, value: String) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(text = label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Text(text = value, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
     }
 }
