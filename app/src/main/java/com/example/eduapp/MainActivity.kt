@@ -94,7 +94,7 @@ fun AppNav(currentContext: Context, viewModel: AppViewModel) {
         }
         
         composable("score") { ScoreScreen(navController, viewModel) }
-        composable("testDB") { TestDBScreen(currentContext) }
+        composable("testDB") { TestDBScreen(viewModel) }
     }
 }
 

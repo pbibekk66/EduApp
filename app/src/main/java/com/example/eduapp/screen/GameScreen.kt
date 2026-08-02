@@ -22,7 +22,9 @@ import androidx.navigation.NavHostController
 import com.example.eduapp.helper.playSound
 import com.example.eduapp.helper.rememberAssetImage
 import com.example.eduapp.viewmodel.AppViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 
 /**
  * Tightly designed Game Screen that fits perfectly on all screen sizes.
@@ -39,8 +41,13 @@ fun GameScreen(
     modifier: Modifier = Modifier
 ) {
     val assetManager = currentContext.assets
-    val puzzleImages: List<String> = remember(level) {
-        assetManager.list(level)?.sorted() ?: emptyList()
+    
+    // Load puzzle images list on a background thread to prevent UI lockup
+    var puzzleImages by remember(level) { mutableStateOf<List<String>>(emptyList()) }
+    LaunchedEffect(level) {
+        withContext(Dispatchers.IO) {
+            puzzleImages = assetManager.list(level)?.sorted() ?: emptyList()
+        }
     }
 
     var currentPuzzleIndex by remember { mutableIntStateOf(0) }
