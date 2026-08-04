@@ -286,7 +286,7 @@ fun GameScreen(
             onDismissRequest = {
                 showResultDialog = false
                 navController.navigate("score")
-            },
+             },
             confirmButton = {},
             title = {
                 Text(
