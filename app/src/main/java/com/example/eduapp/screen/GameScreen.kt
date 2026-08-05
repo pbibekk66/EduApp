@@ -4,11 +4,14 @@ import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -50,15 +53,17 @@ fun GameScreen(
         }
     }
 
-    var currentPuzzleIndex by remember { mutableIntStateOf(0) }
-    var score by remember { mutableIntStateOf(0) }
-    var answerText by remember { mutableStateOf("") }
-    var secondsElapsed by remember { mutableIntStateOf(0) }
+    var currentPuzzleIndex by rememberSaveable { mutableIntStateOf(0) }
+    var score by rememberSaveable { mutableIntStateOf(0) }
+    var answerText by rememberSaveable { mutableStateOf("") }
+    var secondsElapsed by rememberSaveable { mutableIntStateOf(0) }
     val isSoundEnabled by viewModel.isSoundEnabled.collectAsState()
 
     // Dialog state
-    var showResultDialog by remember { mutableStateOf(false) }
+    var showResultDialog by rememberSaveable { mutableStateOf(false) }
     val allScores by viewModel.users.collectAsState(initial = emptyList())
+    
+    val scrollState = rememberScrollState()
 
     // Timer logic
     LaunchedEffect(Unit) {
@@ -134,6 +139,7 @@ fun GameScreen(
             Column(
                 modifier = modifier
                     .fillMaxSize()
+                    .verticalScroll(scrollState)
                     .padding(horizontal = 20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -182,7 +188,8 @@ fun GameScreen(
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .weight(1f),
+                        .heightIn(min = 200.dp, max = 400.dp)
+                        .padding(vertical = 8.dp),
                     shape = RoundedCornerShape(24.dp),
                     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                 ) {

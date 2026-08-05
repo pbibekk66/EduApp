@@ -3,11 +3,14 @@ package com.example.eduapp.screen
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -29,14 +32,15 @@ import com.example.eduapp.R
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LandingScreen(navController: NavHostController, modifier: Modifier = Modifier) {
-    var username by remember { mutableStateOf("") }
+    var username by rememberSaveable { mutableStateOf("") }
+    val scrollState = rememberScrollState()
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { 
                     Text(
-                        "NumNinja EduApp", 
+                        "NumNinja",
                         fontWeight = FontWeight.Bold,
                         style = MaterialTheme.typography.titleLarge
                     ) 
@@ -73,6 +77,7 @@ fun LandingScreen(navController: NavHostController, modifier: Modifier = Modifie
             Column(
                 modifier = modifier
                     .fillMaxSize()
+                    .verticalScroll(scrollState)
                     .padding(horizontal = 32.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
@@ -109,7 +114,7 @@ fun LandingScreen(navController: NavHostController, modifier: Modifier = Modifie
                 )
                 
                 Text(
-                    text = "Sharpen your mind with numbers!",
+                    text = "Sharpen Your Mind With Brainstorming Maths!",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(top = 8.dp)

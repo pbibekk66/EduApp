@@ -3,12 +3,15 @@ package com.example.eduapp.screen
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -33,11 +36,13 @@ fun SettingScreen(
 ) {
     var expanded by remember { mutableStateOf(false) }
     val levels = listOf("Level 1: Beginner", "Level 2: Intermediate", "Level 3: Advanced")
-    var selectedLevel by remember { mutableStateOf(levels[0]) }
+    var selectedLevel by rememberSaveable { mutableStateOf(levels[0]) }
 
     val isDarkTheme by viewModel.isDarkTheme.collectAsState()
     val fontSizeMultiplier by viewModel.fontSizeMultiplier.collectAsState()
     val isSoundEnabled by viewModel.isSoundEnabled.collectAsState()
+    
+    val scrollState = rememberScrollState()
 
     Scaffold(
         topBar = {
@@ -68,6 +73,7 @@ fun SettingScreen(
             Column(
                 modifier = modifier
                     .fillMaxSize()
+                    .verticalScroll(scrollState)
                     .padding(horizontal = 24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
