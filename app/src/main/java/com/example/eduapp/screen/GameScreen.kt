@@ -21,6 +21,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import android.widget.Toast
 import androidx.navigation.NavHostController
 import com.example.eduapp.helper.playSound
 import com.example.eduapp.helper.rememberAssetImage
@@ -57,6 +58,7 @@ fun GameScreen(
     var score by rememberSaveable { mutableIntStateOf(0) }
     var answerText by rememberSaveable { mutableStateOf("") }
     var secondsElapsed by rememberSaveable { mutableIntStateOf(0) }
+    var questionTimer by rememberSaveable { mutableIntStateOf(30) }
     val isSoundEnabled by viewModel.isSoundEnabled.collectAsState()
 
     // Dialog state
@@ -65,11 +67,36 @@ fun GameScreen(
     
     val scrollState = rememberScrollState()
 
-    // Timer logic
+    // Total Game Timer logic
     LaunchedEffect(Unit) {
         while (true) {
             delay(1000)
             secondsElapsed++
+        }
+    }
+
+    // FEATURE: Per-Question 30s Countdown Timer
+    LaunchedEffect(currentPuzzleIndex, puzzleImages) {
+        if (puzzleImages.isNotEmpty()) {
+            questionTimer = 30
+            while (questionTimer > 0) {
+                delay(1000)
+                questionTimer--
+            }
+            
+            // Time Out Logic
+            if (!showResultDialog) {
+                Toast.makeText(currentContext, "Time Out!", Toast.LENGTH_SHORT).show()
+                if (isSoundEnabled) playSound(currentContext, "losing")
+                
+                if (currentPuzzleIndex < puzzleImages.size - 1) {
+                    currentPuzzleIndex++
+                    answerText = ""
+                } else {
+                    viewModel.saveGameResult(username, level, score, secondsElapsed)
+                    showResultDialog = true
+                }
+            }
         }
     }
 
@@ -111,13 +138,24 @@ fun GameScreen(
                     }
                 },
                 actions = {
-                    Text(
-                        text = formatDuration(secondsElapsed),
-                        modifier = Modifier.padding(end = 16.dp),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Black,
-                        color = MaterialTheme.colorScheme.primary
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        // Question Countdown Timer
+                        Text(
+                            text = questionTimer.toString(),
+                            modifier = Modifier.padding(end = 12.dp),
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.Red
+                        )
+                        // Total Timer
+                        Text(
+                            text = formatDuration(secondsElapsed),
+                            modifier = Modifier.padding(end = 16.dp),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Black,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
             )
