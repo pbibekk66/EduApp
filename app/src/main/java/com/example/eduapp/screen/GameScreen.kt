@@ -6,6 +6,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -18,6 +19,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -268,10 +270,17 @@ fun GameScreen(
 
                     OutlinedTextField(
                         value = answerText,
-                        onValueChange = { if (it.length <= 5) answerText = it },
+                        onValueChange = { 
+                            if (it.all { char -> char.isDigit() }) {
+                                if (it.length <= 5) answerText = it 
+                            } else {
+                                Toast.makeText(currentContext, "wrong input answer must be in number", Toast.LENGTH_SHORT).show()
+                            }
+                        },
                         placeholder = { Text("?", textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth()) },
                         modifier = Modifier.width(150.dp),
                         singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         shape = RoundedCornerShape(16.dp),
                         textStyle = MaterialTheme.typography.headlineLarge.copy(
                             textAlign = TextAlign.Center,
