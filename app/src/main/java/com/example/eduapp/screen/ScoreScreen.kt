@@ -3,7 +3,7 @@ package com.example.eduapp.screen
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -87,14 +87,17 @@ fun ScoreScreen(navController: NavHostController, viewModel: AppViewModel, modif
                         }
                     }
                 } else {
+                    val sortedResults = remember(userResults) {
+                        userResults.sortedByDescending { it.score }
+                    }
                     Spacer(modifier = Modifier.height(16.dp))
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
                         verticalArrangement = Arrangement.spacedBy(12.dp),
                         contentPadding = PaddingValues(bottom = 24.dp)
                     ) {
-                        items(userResults) { user ->
-                            ScoreItem(user = user)
+                        itemsIndexed(sortedResults) { index, user ->
+                            ScoreItem(user = user, rank = index + 1)
                         }
                     }
                 }
@@ -142,10 +145,17 @@ fun ScoreScreen(navController: NavHostController, viewModel: AppViewModel, modif
 }
 
 @Composable
-fun ScoreItem(user: com.example.eduapp.database.User) {
+fun ScoreItem(user: com.example.eduapp.database.User, rank: Int) {
     val date = Date(user.date)
     val format = SimpleDateFormat("MMM dd, yyyy • HH:mm", Locale.getDefault())
     val dateString = format.format(date)
+    
+    val rankSuffix = when (rank) {
+        1 -> "1st"
+        2 -> "2nd"
+        3 -> "3rd"
+        else -> "${rank}th"
+    }
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -170,8 +180,8 @@ fun ScoreItem(user: com.example.eduapp.database.User) {
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = user.username.firstOrNull()?.uppercase() ?: "N",
-                    style = MaterialTheme.typography.titleLarge,
+                    text = rankSuffix,
+                    style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
                 )
