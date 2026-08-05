@@ -10,9 +10,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -31,6 +29,7 @@ import java.util.*
 @Composable
 fun ScoreScreen(navController: NavHostController, viewModel: AppViewModel, modifier: Modifier = Modifier) {
     val userResults by viewModel.users.collectAsState(initial = emptyList())
+    var showDeleteDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -42,8 +41,10 @@ fun ScoreScreen(navController: NavHostController, viewModel: AppViewModel, modif
                     }
                 },
                 actions = {
-                    IconButton(onClick = { viewModel.clearUsers() }) {
-                        Icon(Icons.Default.Delete, contentDescription = "Clear All")
+                    if (userResults.isNotEmpty()) {
+                        IconButton(onClick = { showDeleteDialog = true }) {
+                            Icon(Icons.Default.Delete, contentDescription = "Clear All")
+                        }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
@@ -99,6 +100,44 @@ fun ScoreScreen(navController: NavHostController, viewModel: AppViewModel, modif
                 }
             }
         }
+    }
+
+    // FEATURE: Delete Confirmation Dialog
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = {
+                Text(
+                    text = "Clear All Records?",
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Text(
+                    text = "Are you sure you want to delete all scoreboard entries? Once deleted, cannot be undone.",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.clearUsers()
+                        showDeleteDialog = false
+                    },
+                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text("DELETE ALL", fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = false }) {
+                    Text("CANCEL")
+                }
+            },
+            shape = RoundedCornerShape(24.dp),
+            containerColor = MaterialTheme.colorScheme.surface,
+            tonalElevation = 6.dp
+        )
     }
 }
 
