@@ -49,7 +49,8 @@ fun GameScreen(
     viewModel: AppViewModel,
     modifier: Modifier = Modifier
 ) {
-    val assetManager = currentContext.assets
+    val context = currentContext
+    val assetManager = context.assets
     
     // State preservation for rotation support using rememberSaveable.
     // We use ArrayList to ensure the list of images survives phone rotation without reshuffling.
