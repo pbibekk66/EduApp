@@ -33,6 +33,7 @@ import com.example.eduapp.R
 @Composable
 fun LandingScreen(navController: NavHostController, modifier: Modifier = Modifier) {
     var username by rememberSaveable { mutableStateOf("") }
+    var isError by remember { mutableStateOf(false) }
     val scrollState = rememberScrollState()
 
     Scaffold(
@@ -125,11 +126,23 @@ fun LandingScreen(navController: NavHostController, modifier: Modifier = Modifie
                 // REDESIGN: Modern Input Field
                 OutlinedTextField(
                     value = username,
-                    onValueChange = { username = it },
+                    onValueChange = { 
+                        username = it
+                        isError = false
+                    },
                     label = { Text("Player Name") },
                     placeholder = { Text("Who is playing today?") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
+                    isError = isError,
+                    supportingText = {
+                        if (isError) {
+                            Text(
+                                text = "Please enter player name",
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
+                    },
                     shape = RoundedCornerShape(16.dp),
                     textStyle = MaterialTheme.typography.bodyLarge,
                     colors = OutlinedTextFieldDefaults.colors(
@@ -145,6 +158,8 @@ fun LandingScreen(navController: NavHostController, modifier: Modifier = Modifie
                     onClick = { 
                         if (username.isNotBlank()) {
                             navController.navigate("setting/$username")
+                        } else {
+                            isError = true
                         }
                     },
                     modifier = Modifier
