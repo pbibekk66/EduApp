@@ -3,6 +3,7 @@ package com.example.eduapp.screen
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -87,20 +88,38 @@ fun ScoreScreen(navController: NavHostController, viewModel: AppViewModel, modif
                         }
                     }
                 } else {
-                    // FEATURE: Ranking Logic
-                    // We sort the raw results from the database by score (Highest to Lowest).
-                    val sortedResults = remember(userResults) {
-                        userResults.sortedByDescending { it.score }
+                    // FEATURE: Advanced Ranking & Grouping Logic
+                    // 1. We sort first by Level (Ascending: 1, 2, 3) so similar levels are grouped together.
+                    // 2. Then we sort by Score (Descending) to find the top performers within each level.
+                    // 3. We calculate the rank specifically within each level group.
+                    val sortedWithRanks = remember(userResults) {
+                        userResults.sortedWith(
+                            compareBy<com.example.eduapp.database.User> { it.level }
+                                .thenByDescending { it.score }
+                        ).let { sorted ->
+                            var currentLevel = ""
+                            var currentRank = 0
+                            sorted.map { user ->
+                                if (user.level != currentLevel) {
+                                    currentLevel = user.level
+                                    currentRank = 1
+                                } else {
+                                    currentRank++
+                                }
+                                Pair(user, currentRank)
+                            }
+                        }
                     }
+
                     Spacer(modifier = Modifier.height(16.dp))
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
                         verticalArrangement = Arrangement.spacedBy(12.dp),
                         contentPadding = PaddingValues(bottom = 24.dp)
                     ) {
-                        // Using itemsIndexed to get the position (index) of each item for ranking.
-                        itemsIndexed(sortedResults) { index, user ->
-                            ScoreItem(user = user, rank = index + 1)
+                        // Display each user with their calculated rank within their respective level.
+                        items(sortedWithRanks) { (user, rankWithinLevel) ->
+                            ScoreItem(user = user, rank = rankWithinLevel)
                         }
                     }
                 }
