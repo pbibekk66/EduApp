@@ -23,6 +23,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.room.Room
 import com.example.eduapp.database.AppDatabase
+import com.example.eduapp.screen.AboutScreen
 import com.example.eduapp.screen.GameScreen
 import com.example.eduapp.screen.LandingScreen
 import com.example.eduapp.screen.ScoreScreen
@@ -123,6 +124,9 @@ fun AppNav(currentContext: Context, viewModel: AppViewModel) {
         
         // Score Screen: Displays the ranked leaderboard.
         composable("score") { ScoreScreen(navController, viewModel) }
+        
+        // About Screen: Provides app and developer information.
+        composable("about") { AboutScreen(navController) }
         
         // TestDB Screen: A utility screen for debugging database entries.
         composable("testDB") { TestDBScreen(viewModel) }
