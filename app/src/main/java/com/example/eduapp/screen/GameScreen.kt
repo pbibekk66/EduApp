@@ -51,24 +51,27 @@ fun GameScreen(
 ) {
     val assetManager = currentContext.assets
     
-    // FEATURE: Random Question Generation
-    // Asynchronously loads the list of puzzles from assets.
-    // We use .shuffled() instead of .sorted() to ensure questions appear in a random order every time the level starts.
-    var puzzleImages by remember(level) { mutableStateOf<List<String>>(emptyList()) }
-    LaunchedEffect(level) {
-        withContext(Dispatchers.IO) {
-            // This is the code that makes questions occur randomly:
-            puzzleImages = assetManager.list(level)?.toList()?.shuffled() ?: emptyList()
-        }
-    }
-
     // State preservation for rotation support using rememberSaveable.
+    // We use ArrayList to ensure the list of images survives phone rotation without reshuffling.
+    var puzzleImages by rememberSaveable(level) { mutableStateOf(arrayListOf<String>()) }
     var currentPuzzleIndex by rememberSaveable { mutableIntStateOf(0) }
+    var lastHandledIndex by rememberSaveable { mutableIntStateOf(-1) }
     var score by rememberSaveable { mutableIntStateOf(0) }
     var answerText by rememberSaveable { mutableStateOf("") }
     var secondsElapsed by rememberSaveable { mutableIntStateOf(0) }
     var questionTimer by rememberSaveable { mutableIntStateOf(30) }
     val isSoundEnabled by viewModel.isSoundEnabled.collectAsState()
+
+    // FEATURE: Random Question Generation
+    // Only fetch and shuffle questions if the list is empty (e.g., first start of the level).
+    LaunchedEffect(level) {
+        if (puzzleImages.isEmpty()) {
+            withContext(Dispatchers.IO) {
+                val shuffled = assetManager.list(level)?.toList()?.shuffled() ?: emptyList()
+                puzzleImages = ArrayList(shuffled)
+            }
+        }
+    }
 
     // Dialog state
     var showResultDialog by rememberSaveable { mutableStateOf(false) }
@@ -85,10 +88,13 @@ fun GameScreen(
     }
 
     // FEATURE: Per-Question 30s Countdown Timer.
-    // If time runs out, the question is marked as wrong and the app moves to the next puzzle.
+    // Logic handles rotation: only resets the timer to 30s if we have moved to a new puzzle index.
     LaunchedEffect(currentPuzzleIndex, puzzleImages) {
         if (puzzleImages.isNotEmpty()) {
-            questionTimer = 30
+            if (currentPuzzleIndex != lastHandledIndex) {
+                questionTimer = 30
+                lastHandledIndex = currentPuzzleIndex
+            }
             while (questionTimer > 0) {
                 delay(1000)
                 questionTimer--

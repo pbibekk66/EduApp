@@ -84,7 +84,7 @@ fun LandingScreen(navController: NavHostController, modifier: Modifier = Modifie
                 verticalArrangement = Arrangement.Center
             ) {
                 // FEATURE: Hero Image Section
-                // Placeholder image from resources. You can replace 'ic_launcher_foreground' 
+                // Placeholder image from resources. we can replace 'ic_launcher_foreground'
                 // with your game logo (e.g., logo.png) once you add it to res/drawable.
                 Card(
                     modifier = Modifier
@@ -152,8 +152,8 @@ fun LandingScreen(navController: NavHostController, modifier: Modifier = Modifie
                 )
                 
                 Spacer(modifier = Modifier.height(32.dp))
-                
-                // REDESIGN: Gradient/Styled Play Button
+
+                // validate player field is empty or not
                 Button(
                     onClick = { 
                         if (username.isNotBlank()) {
