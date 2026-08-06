@@ -2,17 +2,22 @@ package com.example.eduapp.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import com.example.eduapp.database.AppDao
 import com.example.eduapp.database.User
+import com.example.eduapp.worker.DailyReminderWorker
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.util.concurrent.TimeUnit
 
 /**
  * Shared ViewModel for the application.
- * Manages game data persistence (Room) and UI settings (Theme, Font, Sound).
+ * Manages game data persistence (Room) and UI settings (Theme, Font, Sound, Notifications).
  */
 class AppViewModel(private val dao: AppDao) : ViewModel() {
 
@@ -30,6 +35,10 @@ class AppViewModel(private val dao: AppDao) : ViewModel() {
     // SETTING: Sound effects master toggle
     private val _isSoundEnabled = MutableStateFlow(true)
     val isSoundEnabled: StateFlow<Boolean> = _isSoundEnabled.asStateFlow()
+
+    // SETTING: Daily reminder notification toggle
+    private val _isReminderEnabled = MutableStateFlow(false)
+    val isReminderEnabled: StateFlow<Boolean> = _isReminderEnabled.asStateFlow()
 
     /**
      * Updates the dark mode theme setting.
@@ -50,6 +59,26 @@ class AppViewModel(private val dao: AppDao) : ViewModel() {
      */
     fun toggleSound(enabled: Boolean) {
         _isSoundEnabled.value = enabled
+    }
+
+    /**
+     * Toggles daily reminder and schedules/cancels work.
+     */
+    fun toggleReminder(enabled: Boolean, workManager: WorkManager) {
+        _isReminderEnabled.value = enabled
+        if (enabled) {
+            val reminderRequest = PeriodicWorkRequestBuilder<DailyReminderWorker>(
+                24, TimeUnit.HOURS
+            ).build()
+
+            workManager.enqueueUniquePeriodicWork(
+                "daily_practice_reminder",
+                ExistingPeriodicWorkPolicy.KEEP,
+                reminderRequest
+            )
+        } else {
+            workManager.cancelUniqueWork("daily_practice_reminder")
+        }
     }
 
     /**

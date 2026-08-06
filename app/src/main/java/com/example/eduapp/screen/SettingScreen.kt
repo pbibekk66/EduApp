@@ -1,5 +1,9 @@
 package com.example.eduapp.screen
 
+import android.Manifest
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -17,10 +21,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import androidx.work.WorkManager
 import com.example.eduapp.viewmodel.AppViewModel
 
 /**
@@ -41,8 +47,20 @@ fun SettingScreen(
     val isDarkTheme by viewModel.isDarkTheme.collectAsState()
     val fontSizeMultiplier by viewModel.fontSizeMultiplier.collectAsState()
     val isSoundEnabled by viewModel.isSoundEnabled.collectAsState()
+    val isReminderEnabled by viewModel.isReminderEnabled.collectAsState()
     
+    val context = LocalContext.current
+    val workManager = remember { WorkManager.getInstance(context) }
     val scrollState = rememberScrollState()
+
+    // Permission launcher for Android 13+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            viewModel.toggleReminder(true, workManager)
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -109,6 +127,26 @@ fun SettingScreen(
                             Switch(
                                 checked = isSoundEnabled,
                                 onCheckedChange = { viewModel.toggleSound(it) }
+                            )
+                        }
+
+                        HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), thickness = 0.5.dp)
+
+                        // Daily Reminder
+                        SettingRow(label = "Daily Reminder") {
+                            Switch(
+                                checked = isReminderEnabled,
+                                onCheckedChange = { enabled ->
+                                    if (enabled) {
+                                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                            permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                                        } else {
+                                            viewModel.toggleReminder(true, workManager)
+                                        }
+                                    } else {
+                                        viewModel.toggleReminder(false, workManager)
+                                    }
+                                }
                             )
                         }
 
