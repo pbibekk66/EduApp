@@ -17,26 +17,29 @@ import java.util.concurrent.TimeUnit
 
 /**
  * Shared ViewModel for the application.
- * Manages game data persistence (Room) and UI settings (Theme, Font, Sound, Notifications).
+ * This class acts as the 'Single Source of Truth' for the UI, handling:
+ * 1. Data Persistence: Communicates with the Room Database (AppDao).
+ * 2. Reactive UI State: Uses StateFlow to broadcast settings changes (Theme, Font, Sound, etc.).
+ * 3. Background Tasks: Schedules daily practice reminders using WorkManager.
  */
 class AppViewModel(private val dao: AppDao) : ViewModel() {
 
-    // Database observation
+    // Reactive stream of all users/scores from the database, automatically updating the UI when data changes.
     val users: Flow<List<User>> = dao.getAllUsers()
 
-    // SETTING: Dark Mode preference
+    // Observable state for Dark Mode. UI will re-render when this changes.
     private val _isDarkTheme = MutableStateFlow(false)
     val isDarkTheme: StateFlow<Boolean> = _isDarkTheme.asStateFlow()
 
-    // SETTING: Font scale multiplier (applies to all typography)
+    // Observable state for Font Scale. Used in the custom theme to scale typography.
     private val _fontSizeMultiplier = MutableStateFlow(1.0f)
     val fontSizeMultiplier: StateFlow<Float> = _fontSizeMultiplier.asStateFlow()
 
-    // SETTING: Sound effects master toggle
+    // Master toggle for game sound effects.
     private val _isSoundEnabled = MutableStateFlow(true)
     val isSoundEnabled: StateFlow<Boolean> = _isSoundEnabled.asStateFlow()
 
-    // SETTING: Daily reminder notification toggle
+    // Tracks if the user wants daily practice notifications.
     private val _isReminderEnabled = MutableStateFlow(false)
     val isReminderEnabled: StateFlow<Boolean> = _isReminderEnabled.asStateFlow()
 
@@ -62,21 +65,25 @@ class AppViewModel(private val dao: AppDao) : ViewModel() {
     }
 
     /**
-     * Toggles daily reminder and schedules/cancels work.
+     * Toggles daily reminder and schedules/cancels background work.
+     * Uses WorkManager to ensure the reminder is sent even if the app is closed.
      */
     fun toggleReminder(enabled: Boolean, workManager: WorkManager) {
         _isReminderEnabled.value = enabled
         if (enabled) {
+            // Create a request for a task that runs every 24 hours.
             val reminderRequest = PeriodicWorkRequestBuilder<DailyReminderWorker>(
                 24, TimeUnit.HOURS
             ).build()
 
+            // Enqueue the work. 'KEEP' ensures we don't restart the 24h cycle if already scheduled.
             workManager.enqueueUniquePeriodicWork(
                 "daily_practice_reminder",
                 ExistingPeriodicWorkPolicy.KEEP,
                 reminderRequest
             )
         } else {
+            // Cancel the scheduled work if the user turns off reminders.
             workManager.cancelUniqueWork("daily_practice_reminder")
         }
     }

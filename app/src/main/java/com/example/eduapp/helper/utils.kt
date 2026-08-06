@@ -1,6 +1,5 @@
 package com.example.eduapp.helper
 
-//utility functions
 import android.content.Context
 import android.graphics.BitmapFactory
 import android.media.MediaPlayer
@@ -15,6 +14,7 @@ import java.io.InputStream
 
 /**
  * Utility function to load an ImageBitmap from an asset path on a background thread.
+ * Using Dispatchers.IO ensures that disk I/O does not block the main UI thread, preventing ANRs.
  */
 suspend fun loadAssetImageAsync(context: Context, path: String): ImageBitmap? {
     return withContext(Dispatchers.IO) {
@@ -31,7 +31,7 @@ suspend fun loadAssetImageAsync(context: Context, path: String): ImageBitmap? {
 
 /**
  * Composable function that loads and remembers the ImageBitmap asynchronously.
- * Prevents blocking the UI thread (ANRs).
+ * Uses LaunchedEffect to trigger the background load whenever the path changes.
  */
 @Composable
 fun rememberAssetImage(path: String): ImageBitmap? {
@@ -51,18 +51,20 @@ fun rememberAssetImage(path: String): ImageBitmap? {
 
 /**
  * Utility function to play a sound from the raw resources.
- * Plays on a background thread to avoid UI lag.
+ * FEATURE: Sound Effects Management.
+ * Runs playback in a separate thread to ensure game performance is not affected by audio initialization.
  */
 fun playSound(context: Context, soundResName: String) {
+    // Dynamic resource lookup allows us to call sounds by name string.
     val resId = context.resources.getIdentifier(soundResName, "raw", context.packageName)
     if (resId != 0) {
-        // Run MediaPlayer operations in a background thread to avoid blocking UI
         Thread {
             try {
                 val mediaPlayer = MediaPlayer.create(context, resId)
-                mediaPlayer?.let {
-                    it.setOnCompletionListener { player -> player.release() }
-                    it.start()
+                mediaPlayer?.let { player ->
+                    // Ensures the player is properly released from memory after the sound finishes.
+                    player.setOnCompletionListener { mp -> mp.release() }
+                    player.start()
                 }
             } catch (e: Exception) {
                 e.printStackTrace()

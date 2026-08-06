@@ -33,8 +33,11 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 
 /**
- * Tightly designed Game Screen that fits perfectly on all screen sizes.
- * Optimized layout for better visibility and faster gameplay.
+ * The main Game Engine screen. 
+ * This screen handles:
+ * 1. Gameplay logic (Timers, Scoring, Levels).
+ * 2. Visual presentation (Adaptive layout, Modern UI).
+ * 3. Validation and User Feedback.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,7 +51,7 @@ fun GameScreen(
 ) {
     val assetManager = currentContext.assets
     
-    // Load puzzle images list on a background thread to prevent UI lockup
+    // Asynchronously loads the list of puzzles from assets to prevent UI thread blocking.
     var puzzleImages by remember(level) { mutableStateOf<List<String>>(emptyList()) }
     LaunchedEffect(level) {
         withContext(Dispatchers.IO) {
@@ -56,6 +59,7 @@ fun GameScreen(
         }
     }
 
+    // State preservation for rotation support using rememberSaveable.
     var currentPuzzleIndex by rememberSaveable { mutableIntStateOf(0) }
     var score by rememberSaveable { mutableIntStateOf(0) }
     var answerText by rememberSaveable { mutableStateOf("") }
@@ -69,7 +73,7 @@ fun GameScreen(
     
     val scrollState = rememberScrollState()
 
-    // Total Game Timer logic
+    // FEATURE: Total Game Duration Timer.
     LaunchedEffect(Unit) {
         while (true) {
             delay(1000)
@@ -77,7 +81,8 @@ fun GameScreen(
         }
     }
 
-    // FEATURE: Per-Question 30s Countdown Timer
+    // FEATURE: Per-Question 30s Countdown Timer.
+    // If time runs out, the question is marked as wrong and the app moves to the next puzzle.
     LaunchedEffect(currentPuzzleIndex, puzzleImages) {
         if (puzzleImages.isNotEmpty()) {
             questionTimer = 30
@@ -86,7 +91,7 @@ fun GameScreen(
                 questionTimer--
             }
             
-            // Time Out Logic
+            // Time Out Logic: Executed when the countdown hits zero.
             if (!showResultDialog) {
                 Toast.makeText(currentContext, "Time Out!", Toast.LENGTH_SHORT).show()
                 if (isSoundEnabled) playSound(currentContext, "losing")
@@ -95,6 +100,7 @@ fun GameScreen(
                     currentPuzzleIndex++
                     answerText = ""
                 } else {
+                    // Save final results to Room DB when the game ends via timeout.
                     viewModel.saveGameResult(username, level, score, secondsElapsed)
                     showResultDialog = true
                 }
@@ -102,6 +108,7 @@ fun GameScreen(
         }
     }
 
+    // Determines the current puzzle asset path.
     val currentImageName = if (puzzleImages.isNotEmpty() && currentPuzzleIndex < puzzleImages.size) {
         puzzleImages[currentPuzzleIndex]
     } else {
@@ -111,6 +118,7 @@ fun GameScreen(
     val currentImagePath = if (currentImageName.isNotEmpty()) "$level/$currentImageName" else ""
     val imageBitmap = rememberAssetImage(currentImagePath)
 
+    // Logic to extract correct numeric answer from the filename (e.g. pic_5.jpg -> 5).
     val correctAnswer = remember(currentImageName) {
         if (currentImageName.contains("_") && currentImageName.contains(".")) {
             currentImageName.substringBeforeLast(".").substringAfterLast("_")
@@ -119,10 +127,13 @@ fun GameScreen(
         }
     }
 
+    /**
+     * Formats raw seconds into a MM:SS string.
+     */
     fun formatDuration(seconds: Int): String {
-        val m = (seconds % 3600) / 60
-        val s = seconds % 60
-        return String.format("%02d:%02d", m, s)
+        val minutes = (seconds % 3600) / 60
+        val remainingSeconds = seconds % 60
+        return String.format("%02d:%02d", minutes, remainingSeconds)
     }
 
     Scaffold(
@@ -141,7 +152,7 @@ fun GameScreen(
                 },
                 actions = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        // Question Countdown Timer
+                        // Countdown timer in Red/Bold for visibility.
                         Text(
                             text = questionTimer.toString(),
                             modifier = Modifier.padding(end = 12.dp),
@@ -149,7 +160,7 @@ fun GameScreen(
                             fontWeight = FontWeight.Bold,
                             color = Color.Red
                         )
-                        // Total Timer
+                        // Total game duration.
                         Text(
                             text = formatDuration(secondsElapsed),
                             modifier = Modifier.padding(end = 16.dp),
@@ -183,7 +194,7 @@ fun GameScreen(
                     .padding(horizontal = 20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Compact HUD Progress
+                // Progress tracking UI.
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -208,7 +219,6 @@ fun GameScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Score Chip
                 Surface(
                     shape = RoundedCornerShape(16.dp),
                     color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
@@ -224,7 +234,7 @@ fun GameScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Puzzle Card - Fills available space
+                // Puzzle Card: Displays the brainteaser image.
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -253,7 +263,7 @@ fun GameScreen(
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                // Answer Area
+                // FEATURE: Answer Input Validation.
                 Column(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally
@@ -270,9 +280,10 @@ fun GameScreen(
 
                     OutlinedTextField(
                         value = answerText,
-                        onValueChange = { 
-                            if (it.all { char -> char.isDigit() }) {
-                                if (it.length <= 5) answerText = it 
+                        onValueChange = { input ->
+                            // Only allow numeric input. Show Toast if user enters non-numeric text.
+                            if (input.all { char -> char.isDigit() }) {
+                                if (input.length <= 5) answerText = input
                             } else {
                                 Toast.makeText(currentContext, "wrong input answer must be in number", Toast.LENGTH_SHORT).show()
                             }
@@ -295,9 +306,9 @@ fun GameScreen(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Submit Button
                 Button(
                     onClick = {
+                        // Logic to check answer and play success/fail sound.
                         if (answerText.trim() == correctAnswer) {
                             score += 5
                             if (isSoundEnabled) playSound(currentContext, "winning")
@@ -309,6 +320,7 @@ fun GameScreen(
                             currentPuzzleIndex++
                             answerText = ""
                         } else {
+                            // Save game results to database.
                             viewModel.saveGameResult(username, level, score, secondsElapsed)
                             showResultDialog = true
                         }
@@ -331,9 +343,12 @@ fun GameScreen(
         }
     }
 
+    // FEATURE: Game Result Popup.
+    // Shows status (Pass/Fail) and calculates ranking relative to previous attempts.
     if (showResultDialog) {
         val maxPossibleScore = puzzleImages.size * 5
         val isPassed = score >= (maxPossibleScore * 0.5)
+        // Calculates user rank by comparing against all database entries for this level.
         val rank = allScores.filter { it.level == level }.count { it.score > score } + 1
 
         AlertDialog(

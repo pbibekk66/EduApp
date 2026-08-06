@@ -31,6 +31,7 @@ import com.example.eduapp.viewmodel.AppViewModel
 
 /**
  * Redesigned Setting Screen with a modern, card-based interface.
+ * This screen handles application-wide preferences.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,10 +41,13 @@ fun SettingScreen(
     viewModel: AppViewModel,
     modifier: Modifier = Modifier
 ) {
+    // UI State for dropdown and level selection. 
+    // rememberSaveable ensures level stays selected even if screen rotates.
     var expanded by remember { mutableStateOf(false) }
     val levels = listOf("Level 1: Beginner", "Level 2: Intermediate", "Level 3: Advanced")
     var selectedLevel by rememberSaveable { mutableStateOf(levels[0]) }
 
+    // Collecting StateFlow values from the ViewModel. The UI will automatically recompose when these change.
     val isDarkTheme by viewModel.isDarkTheme.collectAsState()
     val fontSizeMultiplier by viewModel.fontSizeMultiplier.collectAsState()
     val isSoundEnabled by viewModel.isSoundEnabled.collectAsState()
@@ -53,10 +57,12 @@ fun SettingScreen(
     val workManager = remember { WorkManager.getInstance(context) }
     val scrollState = rememberScrollState()
 
-    // Permission launcher for Android 13+
+    // FEATURE: Runtime Permission Handling
+    // Starting with Android 13 (API 33), users must explicitly grant permission to post notifications.
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted ->
+        // If the user grants permission, we schedule the daily reminder.
         if (isGranted) {
             viewModel.toggleReminder(true, workManager)
         }
@@ -112,7 +118,7 @@ fun SettingScreen(
                     elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                 ) {
                     Column(modifier = Modifier.padding(20.dp)) {
-                        // Dark Mode
+                        // FEATURE: Light/Dark Mode Toggle
                         SettingRow(label = "Dark Mode") {
                             Switch(
                                 checked = isDarkTheme,
@@ -122,7 +128,7 @@ fun SettingScreen(
 
                         HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), thickness = 0.5.dp)
 
-                        // Sound
+                        // FEATURE: Sound Effects Toggle
                         SettingRow(label = "Sound Effects") {
                             Switch(
                                 checked = isSoundEnabled,
@@ -132,12 +138,13 @@ fun SettingScreen(
 
                         HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), thickness = 0.5.dp)
 
-                        // Daily Reminder
+                        // FEATURE: Daily Reminder (WorkManager)
                         SettingRow(label = "Daily Reminder") {
                             Switch(
                                 checked = isReminderEnabled,
                                 onCheckedChange = { enabled ->
                                     if (enabled) {
+                                        // Request permission on Android 13+, otherwise enable directly.
                                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                                             permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                                         } else {
@@ -152,7 +159,7 @@ fun SettingScreen(
 
                         HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), thickness = 0.5.dp)
 
-                        // Font Size
+                        // FEATURE: Font Size Adjustment Slider
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(text = "Font Size", style = MaterialTheme.typography.labelLarge)
                             Slider(
@@ -165,7 +172,7 @@ fun SettingScreen(
 
                         HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), thickness = 0.5.dp)
 
-                        // Level Selection
+                        // Difficulty Level Selection
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(text = "Difficulty Level", style = MaterialTheme.typography.labelLarge)
                             Spacer(modifier = Modifier.height(8.dp))
@@ -207,7 +214,7 @@ fun SettingScreen(
 
                 Spacer(modifier = Modifier.weight(1f))
 
-                // Redesigned GO Button
+                // Navigation to Game Screen
                 Button(
                     onClick = { 
                         val levelValue = when(selectedLevel) {

@@ -87,6 +87,8 @@ fun ScoreScreen(navController: NavHostController, viewModel: AppViewModel, modif
                         }
                     }
                 } else {
+                    // FEATURE: Ranking Logic
+                    // We sort the raw results from the database by score (Highest to Lowest).
                     val sortedResults = remember(userResults) {
                         userResults.sortedByDescending { it.score }
                     }
@@ -96,6 +98,7 @@ fun ScoreScreen(navController: NavHostController, viewModel: AppViewModel, modif
                         verticalArrangement = Arrangement.spacedBy(12.dp),
                         contentPadding = PaddingValues(bottom = 24.dp)
                     ) {
+                        // Using itemsIndexed to get the position (index) of each item for ranking.
                         itemsIndexed(sortedResults) { index, user ->
                             ScoreItem(user = user, rank = index + 1)
                         }
@@ -150,6 +153,7 @@ fun ScoreItem(user: com.example.eduapp.database.User, rank: Int) {
     val format = SimpleDateFormat("MMM dd, yyyy • HH:mm", Locale.getDefault())
     val dateString = format.format(date)
     
+    // Logic to display appropriate suffix based on rank (1st, 2nd, 3rd, etc.)
     val rankSuffix = when (rank) {
         1 -> "1st"
         2 -> "2nd"
@@ -226,8 +230,9 @@ fun ScoreItem(user: com.example.eduapp.database.User, rank: Int) {
 }
 
 private fun formatDuration(seconds: Int): String {
-    val h = seconds / 3600
-    val m = (seconds % 3600) / 60
-    val s = seconds % 60
-    return if (h > 0) String.format("%d:%02d:%02d", h, m, s) else String.format("%02d:%02d", m, s)
+    val hours = seconds / 3600
+    val minutes = (seconds % 3600) / 60
+    val remainingSeconds = seconds % 60
+    return if (hours > 0) String.format("%d:%02d:%02d", hours, minutes, remainingSeconds) 
+    else String.format("%02d:%02d", minutes, remainingSeconds)
 }
