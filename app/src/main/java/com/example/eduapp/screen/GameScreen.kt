@@ -51,11 +51,14 @@ fun GameScreen(
 ) {
     val assetManager = currentContext.assets
     
-    // Asynchronously loads the list of puzzles from assets to prevent UI thread blocking.
+    // FEATURE: Random Question Generation
+    // Asynchronously loads the list of puzzles from assets.
+    // We use .shuffled() instead of .sorted() to ensure questions appear in a random order every time the level starts.
     var puzzleImages by remember(level) { mutableStateOf<List<String>>(emptyList()) }
     LaunchedEffect(level) {
         withContext(Dispatchers.IO) {
-            puzzleImages = assetManager.list(level)?.sorted() ?: emptyList()
+            // This is the code that makes questions occur randomly:
+            puzzleImages = assetManager.list(level)?.toList()?.shuffled() ?: emptyList()
         }
     }
 
